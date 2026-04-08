@@ -5,7 +5,7 @@ import MyButton from '../components/MyButton';
 import { Toast } from 'toastify-react-native';
 import { useTheme } from '../context/ThemeContext';
 
-const SERVER_URL = 'http://192.168.1.27:3000'; // <-- REPLACE WITH YOUR LOCAL IP!!!
+const SERVER_URL = 'http://YOUR_LOCAL_IP:3000'; // <-- REPLACE WITH YOUR LOCAL IP!!!
 
 export default function Backup() {
     const { colors } = useTheme();
