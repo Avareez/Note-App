@@ -1,57 +1,60 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Button } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Switch, Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import NoteItem from '../components/NoteItem';
+import MyButton from '../components/MyButton';
+import { useTheme } from '../context/ThemeContext';
+import { Toast } from 'toastify-react-native';
 
-export default function Notes({ navigation }) {
-    const [notes, setNotes] = useState([]);
+export default function Settings() {
+    const { isDarkMode, toggleDarkMode, colors } = useTheme();
 
-    const loadNotes = async () => {
-        try {
-            const storedNotes = await SecureStore.getItemAsync('notes');
-            if (storedNotes) {
-                setNotes(JSON.parse(storedNotes));
-            } else {
-                setNotes([]);
-            }
-        } catch (error) {
-            console.error('Error loading notes:', error);
-        }
+    const handleToggle = (value) => {
+        toggleDarkMode(value);
+        Toast.success(value ? 'Dark mode enabled!' : 'Light mode enabled!', 'top');
     };
 
-    useEffect(() => {
-        loadNotes();
-        const unsubscribe = navigation.addListener('focus', loadNotes);
-        return unsubscribe;
-    }, [navigation]);
-
-    const deleteNote = async (id) => {
-        try {
-            const storedNotes = await SecureStore.getItemAsync('notes');
-            if (storedNotes) {
-                const notesArray = JSON.parse(storedNotes);
-                const updatedNotes = notesArray.filter(note => note.id !== id);
-                await SecureStore.setItemAsync('notes', JSON.stringify(updatedNotes));
-                setNotes(updatedNotes);
-                console.log('Note deleted successfully');
-            }
-        } catch (error) {
-            console.error('Error deleting note:', error);
-        }
+    const handleDeleteAllNotes = () => {
+        Alert.alert(
+            'Delete All Notes',
+            'Are you sure? This will permanently delete ALL your notes.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete All',
+                    style: 'destructive',
+                    onPress: async () => {
+                        await SecureStore.setItemAsync('notes', JSON.stringify([]));
+                        Toast.success('All notes deleted!', 'top');
+                    }
+                }
+            ]
+        );
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Your Notes</Text>
-            {notes.length === 0 ? (
-                <Text style={styles.noNotes}>No notes available. Add some!</Text>
-            ) : (
-                <FlatList
-                    data={notes}
-                    keyExtractor={item => item.id.toString()}
-                    renderItem={({ item }) => <NoteItem id={item.id} title={item.title} content={item.content} color={item.color} onDelete={deleteNote} />}
-                />
-            )}
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+            <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
+
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>Appearance</Text>
+                <View style={styles.row}>
+                    <Text style={[styles.label, { color: colors.text }]}>Dark Mode</Text>
+                    <Switch
+                        value={isDarkMode}
+                        onValueChange={handleToggle}
+                        trackColor={{ false: '#ccc', true: colors.primary }}
+                        thumbColor={isDarkMode ? '#fff' : '#f4f3f4'}
+                    />
+                </View>
+            </View>
+
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>Danger Zone</Text>
+                <Text style={[styles.warning, { color: colors.danger }]}>
+                    This action cannot be undone!
+                </Text>
+                <MyButton text="Delete All Notes" onPress={handleDeleteAllNotes} color="#e74c3c" />
+            </View>
         </View>
     );
 }
@@ -59,20 +62,36 @@ export default function Notes({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        backgroundColor: '#f8f9fa',
+        padding: 20
     },
     title: {
         fontSize: 28,
         fontWeight: 'bold',
-        marginBottom: 10,
         textAlign: 'center',
-        color: '#03A9F4',
+        marginBottom: 30
     },
-    noNotes: {
+    card: {
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 20,
+        elevation: 2,
+        borderWidth: 1,
+    },
+    cardTitle: {
         fontSize: 18,
-        textAlign: 'center',
-        color: '#999',
-        marginTop: 20,
+        fontWeight: 'bold',
+        marginBottom: 15
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    label: {
+        fontSize: 16
+    },
+    warning: {
+        fontSize: 13,
+        marginBottom: 10
     },
 });

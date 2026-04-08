@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TextInput } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import NoteItem from '../components/NoteItem';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Notes({ navigation }) {
     const [notes, setNotes] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredNotes, setFilteredNotes] = useState([]);
+    const { colors } = useTheme();
 
     const loadNotes = async () => {
         try {
@@ -46,11 +48,15 @@ export default function Notes({ navigation }) {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Your Notes</Text>
-
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+            <Text style={[styles.title, { color: colors.primary }]}>Your Notes</Text>
             <TextInput
-                style={styles.searchInput}
+                style={[styles.searchInput, {
+                    backgroundColor: colors.card,
+                    borderColor: colors.border,
+                    color: colors.text
+                }]}
+                placeholderTextColor={colors.subtext}
                 placeholder="Search notes..."
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -92,5 +98,10 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         backgroundColor: '#fff',
     },
-    noNotes: { fontSize: 18, textAlign: 'center', color: '#999', marginTop: 20 },
+    noNotes: {
+        fontSize: 18,
+        textAlign: 'center',
+        color: '#999',
+        marginTop: 20
+    },
 });

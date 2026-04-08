@@ -1,93 +1,113 @@
 import * as React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, Alert } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import {
-  DrawerContentScrollView,
-  DrawerItemList,
-  DrawerItem
-} from '@react-navigation/drawer';
-import * as SecureStore from 'expo-secure-store';
+import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ToastManager from "toastify-react-native";
 
 import Notes from './screens/Notes';
 import AddNote from './screens/AddNote';
 import AddCategory from './screens/AddCategory';
-import EditNote from './screens/EditNote'
+import EditNote from './screens/EditNote';
 import Settings from './screens/Settings';
 import Backup from './screens/Backup';
-
-
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 const Drawer = createDrawerNavigator();
 
 function CustomDrawerContent(props) {
+  const { colors, isDarkMode } = useTheme();
+  const iconColor = isDarkMode ? '#fff' : 'black';
+
   return (
-    <DrawerContentScrollView {...props}>
+    <DrawerContentScrollView
+      {...props}
+      contentContainerStyle={{ paddingTop: 0 }}
+      style={{ padding: 0 }}
+    >
       <View style={styles.titleContainer}>
         <Text style={styles.title}>Note App cz.2</Text>
         <Text style={styles.title2}>categories and searching</Text>
       </View>
-      <DrawerItem
-        label="Notes"
-        icon={() => <Icon
-          name="note-multiple-outline" size={24} color="black" />}
-        onPress={() => props.navigation.navigate("Notes")}
-      />
-      <DrawerItem
-        label="New Note"
-        icon={() => <Icon name="plus" size={24} color="black" />}
-        onPress={() => props.navigation.navigate("AddNote")}
-      />
-      <DrawerItem
-        label="New Category"
-        icon={() => <Icon name="plus" size={24} color="black" />}
-        onPress={() => props.navigation.navigate("AddCategory")}
-      />
-      <DrawerItem
-        label="Settings"
-        icon={() => <Icon name="cog" size={24} color="black" />}
-        onPress={() => props.navigation.navigate("Settings")}
-      />
-      <DrawerItem
-        label="Backup"
-        icon={() => <Icon name="arrow-down-thin-circle-outline" size={24} color="black" />}
-        onPress={() => props.navigation.navigate("Backup")}
-      />
-      <DrawerItem
-        label="Info"
-        icon={() => <Icon name="information-outline" size={24} color="black" />}
-        onPress={() => alert("NotesApp, cz.1")}
-      />
+
+      <View style={{ backgroundColor: colors.background, flex: 1 }}>
+        <DrawerItem
+          label="Notes"
+          labelStyle={{ color: colors.text }}
+          icon={() => <Icon name="note-multiple-outline" size={24} color={iconColor} />}
+          onPress={() => props.navigation.navigate("Notes")}
+        />
+        <DrawerItem
+          label="New Note"
+          labelStyle={{ color: colors.text }}
+          icon={() => <Icon name="plus" size={24} color={iconColor} />}
+          onPress={() => props.navigation.navigate("AddNote")}
+        />
+        <DrawerItem
+          label="New Category"
+          labelStyle={{ color: colors.text }}
+          icon={() => <Icon name="plus" size={24} color={iconColor} />}
+          onPress={() => props.navigation.navigate("AddCategory")}
+        />
+        <DrawerItem
+          label="Settings"
+          labelStyle={{ color: colors.text }}
+          icon={() => <Icon name="cog" size={24} color={iconColor} />}
+          onPress={() => props.navigation.navigate("Settings")}
+        />
+        <DrawerItem
+          label="Backup"
+          labelStyle={{ color: colors.text }}
+          icon={() => <Icon name="arrow-down-thin-circle-outline" size={24} color={iconColor} />}
+          onPress={() => props.navigation.navigate("Backup")}
+        />
+        <DrawerItem
+          label="Info"
+          labelStyle={{ color: colors.text }}
+          icon={() => <Icon name="information-outline" size={24} color={iconColor} />}
+          onPress={() => alert("NotesApp v1.1")}
+        />
+      </View>
     </DrawerContentScrollView>
+  );
+}
+
+function DrawerNavigator() {
+  const { colors } = useTheme();
+
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      screenOptions={{
+        headerStyle: { backgroundColor: '#03A9F4' },
+        headerTintColor: '#fff',
+        headerTitleStyle: { fontWeight: 'bold' },
+        drawerStyle: { backgroundColor: colors.background },
+      }}
+    >
+      <Drawer.Screen name="Notes" component={Notes} />
+      <Drawer.Screen name="AddNote" component={AddNote} options={{ title: 'New Note' }} />
+      <Drawer.Screen name="AddCategory" component={AddCategory} options={{ title: 'New Category' }} />
+      <Drawer.Screen name="EditNote" component={EditNote} options={{ title: 'Edit Note' }} />
+      <Drawer.Screen name="Settings" component={Settings} />
+      <Drawer.Screen name="Backup" component={Backup} />
+    </Drawer.Navigator>
   );
 }
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <ToastManager />
-      <Drawer.Navigator drawerContent={(props) => <CustomDrawerContent {...props} />}>
-        <Drawer.Screen name="Notes" component={Notes} />
-        <Drawer.Screen name="AddNote" component={AddNote} />
-        <Drawer.Screen name="AddCategory" component={AddCategory} />
-        <Drawer.Screen name="EditNote" component={EditNote} />
-        <Drawer.Screen name="Settings" component={Settings} />
-        <Drawer.Screen name="Backup" component={Backup} />
-      </Drawer.Navigator>
-    </NavigationContainer >
+    <ThemeProvider>
+      <NavigationContainer>
+        <ToastManager />
+        <DrawerNavigator />
+      </NavigationContainer>
+    </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -102,10 +122,11 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     backgroundColor: '#03A9F4',
-    position: "relative",
     padding: 20,
+    paddingTop: 50,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    marginBottom: 10
+    marginBottom: 10,
+    marginHorizontal: -12
   }
 });
