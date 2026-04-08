@@ -1,16 +1,27 @@
 import express, { json } from "express";
-import { createTask, getTasks, getById, updateTask } from "./app/dbcontroller.js"
+import { getBackups, createBackup, deleteBackup } from "./app/dbcontroller.js"
 
-const app = express()
+const app = express();
 const PORT = 3000;
-app.use(json())
+app.use(json());
 
-app.get("/api/task", async (req, res) => {
-    console.log("get");
-    const tasks = await getTasks();
-    res.status(200).json(tasks);
+app.get("/api/backup", async (req, res) => {
+    const backups = await getBackups();
+    res.status(200).json(backups);
+})
+
+app.post("/api/backup", async (req, res) => {
+    const { notes } = req.body;
+    const result = await createBackup(notes);
+    res.status(201).json(result);
+})
+
+app.delete("/api/backup/:id", async (req, res) => {
+    const { id } = req.params;
+    const result = await deleteBackup(id);
+    res.status(200).json(result);
 })
 
 app.listen(PORT, () => {
-    console.log("start")
+    console.log("Server running on port " + PORT);
 })
